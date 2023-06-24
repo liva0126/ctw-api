@@ -24,6 +24,7 @@ import ctw.user.model.enums.UserRoleEnum;
 import ctw.user.model.mapper.UserMapper;
 import ctw.user.model.vo.LoginUserVO;
 import ctw.user.model.vo.UserVO;
+import ctw.user.service.AvatarService;
 import ctw.user.service.UserService;
 import ctw.base.utils.SqlUtils;
 import java.util.*;
@@ -35,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -56,7 +56,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private RedisCacheClient redisCacheClient;
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private AvatarService avatarService;
 
     /**
      * 盐值，混淆密码
@@ -123,17 +123,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setIs_vip(0);
         user.setVip_level(0);
         user.setName("创客#" + RandomUtil.randomNumbers(6));
-        user.setAvatar("");
-        user.setProfile("");
-        user.setRole("");
-        user.setUnionId("");
-        user.setMpOpenId("");
-        user.setCreate_ip("");
+        user.setAvatar(avatarService.getDefaultAvatar(gender));
+        user.setRole("user");
+        user.setCreate_ip(IpUtils.getIpAddr());
         user.setCreateTime(new Date());
         user.setUpdateTime(new Date());
         user.setIsDelete(0);
-
-
         return user;
     }
 
@@ -199,9 +194,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public String sendCode(String phone, HttpServletRequest request) {
+    public String sendCode(String phone) {
         // 获取用户的ip地址
-        String ip = IpUtils.getIpAddr(request);
+        String ip = IpUtils.getIpAddr();
         // 获取用户最近一次请求的时间戳
         String lastSendTime = redisCacheClient.get(CODE_USER_IP_KEY + ip);
         // 如果距离现在时间小于60秒，则不允许发送
@@ -222,12 +217,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private User CreateUserWithPhone(String phone) {
         User user = new User();
         user.setPhone(phone);
-        user.setName(USER_NICK_NAME_PREFIX+ RandomUtil.randomString(10));
+        user.setName("创客#" + RandomUtil.randomNumbers(6));
+        user.setRole("user");
+        user.setCreate_ip(IpUtils.getIpAddr());
+        user.setCreateTime(new Date());
+        user.setUpdateTime(new Date());
         save(user);
         return user;
     }
-
-
 
     /**
      * 生成token并保存登录状态

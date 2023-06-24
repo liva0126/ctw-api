@@ -134,5 +134,5 @@ public interface UserService extends IService<User> {
      * @param phone
      * @return
      */
-    String sendCode(String phone,HttpServletRequest request);
+    String sendCode(String phone);
 }

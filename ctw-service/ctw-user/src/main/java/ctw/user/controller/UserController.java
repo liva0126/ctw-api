@@ -118,12 +118,12 @@ public class UserController {
      */
     @ApiOperation(value = "发送手机验证码")
     @PostMapping("/login/code")
-    public BaseResponse<String> sendCode(@RequestParam String phone, HttpServletRequest request) {
+    public BaseResponse<String> sendCode(@RequestParam String phone) {
         // 1. 参数验证 验证是否为空，以及是否正则匹配
         if (StringUtils.isBlank(phone) || RegexUtils.isPhoneInvalid(phone)) {
             return ResultUtils.error(ErrorCode.PARAMS_ERROR);
         }
-        String code = userService.sendCode(phone,request);
+        String code = userService.sendCode(phone);
         return ResultUtils.success(code);
     }
 
